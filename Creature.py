@@ -55,8 +55,10 @@ class Creature:
         self.health = 1.0
 
         if genome == None:
-            self.evalWeights = self.evalNet.getWeights("input", "output").tolist()[0]
-            self.actWeights = self.actNet.getWeights("input", "output").tolist()[0]
+            self.evalWeights = \
+                self.evalNet.getWeights("input", "output").flatten().tolist()
+            self.actWeights = \
+                self.actNet.getWeights("input", "output").flatten().tolist()
             self.genome = self.evalWeights + self.actWeights
 
         else:
@@ -64,8 +66,6 @@ class Creature:
             self.genome = genome
             self.evalWeights = self.genome[0:evalWeightSize]
             self.actWeights = self.genome[evalWeightSize:]
-
-        print self.actWeights, self.evalWeights
 
         self.setWeights(self.evalNet, self.evalWeights)
         self.setWeights(self.actNet, self.actWeights)
@@ -78,6 +78,5 @@ class Creature:
         index = 0
         for i in range(net.inputSize): # from node
             for o in range(net.outputSize): # to node
-                print weights[index]
-                self.evalNet.setWeight("input", i,"output", o, weights[index])
+                net.setWeight("input", i,"output", o, weights[index])
                 index += 1
