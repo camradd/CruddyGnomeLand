@@ -19,12 +19,13 @@ def draw():
         for col in range(SIZE_X):
 
             tile = world.tiles[row][col]
+            img = None
 
             if tile.__class__ is Tree:
-                fill(253, 52, 52)
+                img = loadImage('tree.png')
             elif tile.__class__ is Food:
-                fill(52, 253, 79)
+                img = loadImage('food.png')
             else:
-                fill(200)
+                img = loadImage('tile.png')
 
-            rect(col * tileSize, row * tileSize, tileSize, tileSize)
+            image(img, col * tileSize, row * tileSize, tileSize, tileSize)
