@@ -1,4 +1,4 @@
-import conx, math, random
+import conx, math, random, numpy
 
 class EvalNet(conx.BackpropNetwork):
 
@@ -54,9 +54,9 @@ class Creature:
         self.sight = [[]*4 for i in range(4)]
         self.health = 1.0
 
-        if genome != None:
-            self.evalWeights = list(self.evalNet.getWeights("input", "output"))
-            self.actWeight = list(self.actNet.getWeights("input", "output"))
+        if genome == None:
+            self.evalWeights = self.evalNet.getWeights("input", "output").tolist()[0]
+            self.actWeights = self.actNet.getWeights("input", "output").tolist()[0]
             self.genome = self.evalWeights + self.actWeights
 
         else:
@@ -64,6 +64,8 @@ class Creature:
             self.genome = genome
             self.evalWeights = self.genome[0:evalWeightSize]
             self.actWeights = self.genome[evalWeightSize:]
+
+        print self.actWeights, self.evalWeights
 
         self.setWeights(self.evalNet, self.evalWeights)
         self.setWeights(self.actNet, self.actWeights)
@@ -74,7 +76,8 @@ class Creature:
     def setWeights(self, net, weights):
         #setWeight(self, fromName, fromPos, toName, toPos, value)
         index = 0
-        for i in range(net.getLayer('input').size): # from node
-            for o in range(net.getLayer('output').size): # to node
+        for i in range(net.inputSize): # from node
+            for o in range(net.outputSize): # to node
+                print weights[index]
                 self.evalNet.setWeight("input", i,"output", o, weights[index])
                 index += 1

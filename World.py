@@ -1,12 +1,11 @@
 class Food:
 
     '''
-    Food object. Has variable nutrition value, which is normally positive, but
-    can be negative.
+    Food object. Has
     '''
 
     def __init__(self):
-        self.value = random.uniform(-1,10) #can be "posionous"
+        self.value = .2
 
     def __repr__(self):
         return "f"
@@ -18,7 +17,7 @@ class Tree:
     '''
 
     def __init__(self):
-        self.value = random.uniform(-5,0)
+        self.value = .5
 
     def __repr__(self):
         return "T"
