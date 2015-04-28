@@ -1,30 +1,6 @@
+import conx, math, random
 
-from conx import *
-import math, random
-
-
-N, E, S, W = [[] for i in range(4)] #Directions
-H = [] #Health
-
-INPUT = [N,E, S, W, H]
-
-
-class Net(SRN, SigmaNetwork):
-
-    def __init__(self, recurrent, inputs, inputLayers, hiddenLayers,
-     outputLayers, epsilon = None, momentum = None, tolerance = None):
-
-        if not recurrent: SigmaNetwork.__init__(self)
-        else: SRN.__init__(self)
-        self.addLayers(inputLayers,hiddenLayers,1)
-        self.setInputs(inputs)
-        self.setSequenceType("ordered-continuous")
-        if epsilon != None: self.setEpsilon(epsilon)
-        if momentum != None: self.setMomentum(momentum)
-        if tolerance != None: self.setTolerance(tolerance)
-
-
-class EvalNet(Net):
+class EvalNet(conx.BackpropNetwork):
 
     '''
     Evaluation Network. Inherited trait that does not change over the lifetime
@@ -34,13 +10,18 @@ class EvalNet(Net):
     valued scalar.
     '''
 
-    def __init__(self, weights = None):
-        Net.__init__(self, recurrent = False, inputs = INPUT, inputLayers = 5,
-         hiddenLayers = 1, outputLayers = 1)
+    def __init__(self, weights = None, epsilon = 0.3, momentum = 0.9,
+                    tolerance = 0.1):
+
+        conx.BackpropNetwork.__init__(self)
+        self.addLayers(5, 1)
+        self.setEpsilon(epsilon)
+        self.setMomentum(momentum)
+        self.setTolerance(tolerance)
 
 
 
-class ActNet(Net):
+class ActNet(conx.SigmaNetwork):
 
     '''
     Action Network. Inherited trait that changes over the lifetime of the
@@ -52,9 +33,14 @@ class ActNet(Net):
     (the fifth bit allows the creature to stay).
     '''
 
-    def __init__(self):
-        Net.__init__(self, recurrent = True, inputs = INPUT, inputLayers = 5,
-         hiddenLayers = 1, outputLayers = 5 )
+    def __init__(self, weights = None, epsilon = 0.3, momentum = 0.9,
+                    tolerance = 0.1):
+
+        conx.SigmaNetwork.__init__(self)
+        self.addLayers(5, 5)
+        self.setEpsilon(epsilon)
+        self.setMomentum(momentum)
+        self.setTolerance(tolerance)
 
 class Creature:
 
@@ -68,15 +54,13 @@ class Creature:
         self.evalNet = EvalNet()
         self.actNet = ActNet()
         self.sight = [[]*4 for i in range(4)]
-        self.health = 100
+        self.health = 1.0
 
         if genome != None:
             self.genome = [
-                self.evalNet.getWeights("input", "hidden"),
-                self.evalNet.getWeights("hidden", "output"),
-                self.actNet.getWeights("input", "hidden"),
-                self.evalNet.getWeights("hidden", "output"
-                ]
+                self.evalNet.getWeights("input", "output"),
+                self.actNet.getWeights("input", "output")
+            ]
         else:
             self.genome = genome
             self.setWeights(genome)
