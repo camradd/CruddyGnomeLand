@@ -30,7 +30,7 @@ class ActNet(conx.SigmaNetwork):
     punishes those with negative evaluation. The action network takes as input
     what the creature sees (in each direction) and the creature's health. The
     action network then outputs 5 bits, specifiying in which direction to move
-    (the fifth bit allows the creature to stay).
+    (the fifth bit allows the creature to stay) in a one hot representation.
     '''
 
     def __init__(self, weights = None, epsilon = 0.3, momentum = 0.9,
@@ -57,10 +57,10 @@ class Creature:
         self.health = 1.0
 
         if genome != None:
-            self.genome = [
-                self.evalNet.getWeights("input", "output"),
+            self.genome =
+                self.evalNet.getWeights("input", "output")
                 self.actNet.getWeights("input", "output")
-            ]
+
         else:
             self.genome = genome
             self.setWeights(genome)
@@ -68,32 +68,10 @@ class Creature:
     def __repr__(self):
         return "^_^"
 
-    def setWeights(genome):
+    def initWeights(genome):
         #setWeight(self, fromName, fromPos, toName, toPos, value)
-        ## set EvalNet
-        self.evalNet.setWeight("input", i, "hidden", j, self.genome[i])
-
-class Food:
-
-    '''
-    Food object. Has variable nutrition value, which is normally positive, but
-    can be negative.
-    '''
-
-    def __init__(self):
-        self.value = random.uniform(-1,10) #can be "posionous"
-
-    def __repr__(self):
-        return "f"
-
-class Tree:
-
-    '''
-    Tree object, in world. Carries variable damage value.
-    '''
-
-    def __init__(self):
-        self.value = random.uniform(-5,0)
-
-    def __repr__(self):
-        return "T"
+        for network in self.genome:
+            for i in range(len(network)): # from node
+                for j in range(len(network)): # to node
+                    self.evalNet.setWeight("input", i,
+                     "output",j, netWeights[weight])
