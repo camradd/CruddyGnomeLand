@@ -45,19 +45,16 @@ class Creature:
     '''
 
     def __init__(self, genome = None):
-        self.evalNet = EvalNet()
-        self.actNet = ActNet()
-        self.sight = [[]*4 for i in range(4)]
-        self.health = 1.0
-
         if genome != None:
-            self.genome = [
-                self.evalNet.getWeights("input", "output"),
-                self.actNet.getWeights("input", "output")
-            ]
+            self.genome = self.evalNet.getWeights("input", "output") + \
+                          self.actNet.getWeights("input", "output")
         else:
             self.genome = genome
-            self.setWeights(genome)
+
+        self.evalNet = EvalNet(genome[0])
+        self.actNet = ActNet(genome[1])
+        self.sight = [[]*4 for i in range(4)]
+        self.health = 1.0
 
     def __repr__(self):
         return "^_^"
