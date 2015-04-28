@@ -10,9 +10,11 @@ class EvalNet(conx.BackpropNetwork):
     The evaluation network then outputs a real valued scalar.
     '''
 
-    def __init__(self, weights = None):
+    def __init__(self):
         conx.BackpropNetwork.__init__(self)
-        self.addLayers(5, 1)
+        self.inputSize = 5
+        self.outputSize = 1
+        self.addLayers(self.inputSize, self.outputSize)
         self.setEpsilon(0.3)
         self.setMomentum(0.9)
         self.setTolerance(0.1)
@@ -29,9 +31,11 @@ class ActNet(conx.SigmaNetwork):
     the creature to stay put) in a one hot representation.
     '''
 
-    def __init__(self, weights = None):
+    def __init__(self):
         conx.SigmaNetwork.__init__(self)
-        self.addLayers(5, 5)
+        self.inputSize = 5
+        self.outputSize = 5
+        self.addLayers(self.inputSize, self.outputSize)
         self.setEpsilon(0.3)
         self.setMomentum(0.9)
         self.setTolerance(0.1)
@@ -45,24 +49,32 @@ class Creature:
     '''
 
     def __init__(self, genome = None):
-        if genome != None:
-            self.genome = self.evalNet.getWeights("input", "output") + \
-                          self.actNet.getWeights("input", "output")
-        else:
-            self.genome = genome
-
-        self.evalNet = EvalNet(genome[0])
-        self.actNet = ActNet(genome[1])
+        self.evalNet = EvalNet()
+        self.actNet = ActNet()
         self.sight = [[]*4 for i in range(4)]
         self.health = 1.0
+
+        if genome != None:
+            self.evalWeights = list(self.evalNet.getWeights("input", "output"))
+            self.actWeight = list(self.actNet.getWeights("input", "output"))
+            self.genome = self.evalWeights + self.actWeights
+
+        else:
+            evalWeightSize = self.evalNet.inputSize * self.evalNet.outputSize
+            self.genome = genome
+            self.evalWeights = self.genome[0:evalWeightSize]
+            self.actWeights = self.genome[evalWeightSize:]
+
+        self.setWeights(self.evalNet, self.evalWeights)
+        self.setWeights(self.actNet, self.actWeights)
 
     def __repr__(self):
         return "^_^"
 
-    def initWeights(genome):
+    def setWeights(self, net, weights):
         #setWeight(self, fromName, fromPos, toName, toPos, value)
-        for network in self.genome:
-            for i in range(len(network)): # from node
-                for j in range(len(network)): # to node
-                    self.evalNet.setWeight("input", i,
-                     "output",j, netWeights[weight])
+        index = 0
+        for i in range(net.getLayer('input').size): # from node
+            for o in range(net.getLayer('output').size): # to node
+                self.evalNet.setWeight("input", i,"output", o, weights[index])
+                index += 1
