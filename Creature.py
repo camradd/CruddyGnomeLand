@@ -4,22 +4,18 @@ class EvalNet(conx.BackpropNetwork):
 
     '''
     Evaluation Network. Inherited trait that does not change over the lifetime
-    of the creature. The evaluation network takes as input four directions,
-    each denoting what the creature sees in that direction, and what the
-    creatures current health is. The evaluation network then outputs a real
-    valued scalar.
+    of the creature. The evaluation network takes as input the closeness of
+    landscape features, food, other creatures, etc in each of the four
+    directions (within the visible distance),  creature's current health.
+    The evaluation network then outputs a real valued scalar.
     '''
 
-    def __init__(self, weights = None, epsilon = 0.3, momentum = 0.9,
-                    tolerance = 0.1):
-
+    def __init__(self, weights = None):
         conx.BackpropNetwork.__init__(self)
         self.addLayers(5, 1)
-        self.setEpsilon(epsilon)
-        self.setMomentum(momentum)
-        self.setTolerance(tolerance)
-
-
+        self.setEpsilon(0.3)
+        self.setMomentum(0.9)
+        self.setTolerance(0.1)
 
 class ActNet(conx.SigmaNetwork):
 
@@ -27,20 +23,18 @@ class ActNet(conx.SigmaNetwork):
     Action Network. Inherited trait that changes over the lifetime of the
     creature via reinforcement learning. The reinforcement learning algorithm
     rewards behaviours that lead to positive evalutation, from EvalNet, and
-    punishes those with negative evaluation. The action network takes as input
-    what the creature sees (in each direction) and the creature's health. The
-    action network then outputs 5 bits, specifiying in which direction to move
-    (the fifth bit allows the creature to stay).
+    punishes those with negative evaluation (CBRP). The action network takes the
+    same inputs as the EvalNet. The action network then outputs 5 probablilties,
+    each one corresponding to a in which direction to move (the fifth one allows
+    the creature to stay put).
     '''
 
-    def __init__(self, weights = None, epsilon = 0.3, momentum = 0.9,
-                    tolerance = 0.1):
-
+    def __init__(self, weights = None):
         conx.SigmaNetwork.__init__(self)
         self.addLayers(5, 5)
-        self.setEpsilon(epsilon)
-        self.setMomentum(momentum)
-        self.setTolerance(tolerance)
+        self.setEpsilon(0.3)
+        self.setMomentum(0.9)
+        self.setTolerance(0.1)
 
 class Creature:
 
