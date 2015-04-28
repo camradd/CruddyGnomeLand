@@ -1,7 +1,12 @@
+import random
+
 class Tile:
 
     def __init__(self):
         pass
+
+    def __repr__(self):
+        return " "
 
 class Food:
 
@@ -31,13 +36,15 @@ class Tree:
 class World:
 
     tileClasses = [Tile, Food, Tree]
-    tileWeights = [0.5,  0.2,  0.3 ]
+    tileProbs   = [97  , 1   , 2   ]
 
     def __init__(self, width = 100, height = 100):
-        self.tiles = [[self.createTile() for x in range(width)] for y in range(height)]
+        self.tiles = \
+            [[self.createTile() for x in range(width)] for y in range(height)]
 
     def createTile(self):
-        tileClass = self._weightedChoice(tileClasses, )
+        tileClass = self._weightedChoice(self.tileClasses, self.tileProbs)
+        return tileClass()
 
     def _weightedChoice(self, elements, weights):
         randomNumber = random.uniform(0, sum(weights))
