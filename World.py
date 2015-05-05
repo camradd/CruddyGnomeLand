@@ -61,13 +61,13 @@ class World:
  made most sense to me here, based on what we have now. Here is a reproduction
  method that can handle any number of parents.
 '''
+
     def reproduction(parents):
         parents = [p.genome for p in parents]
         if len(parents) == 1:
             return Creature(mutation(parents[0]))
         else:
             while len(parents) > 1:
-                print "loopin"
                 p1 = random.choice(parents)
                 parents.remove(p1)
                 p2 = random.choice(parents)
