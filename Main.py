@@ -1,18 +1,26 @@
-from graphics import *
 from World import *
-import math, time
+import pyglet
 
 SIZE_X = 120
 SIZE_Y = 70
 tileSize = 10
-width = SIZE_X * tileSize
-height = SIZE_Y * tileSize
+
 world = World(SIZE_X, SIZE_Y)
 
-def main():
-    win = GraphWin("CruddyGnomeLand", sizeX*tileSize, sizeX*tileSize)
+window = pyglet.window.Window(
+    width  = SIZE_X * tileSize,
+    height = SIZE_Y * tileSize
+)
 
-def draw():
+@window.event
+def on_draw():
+    batch = pyglet.graphics.Batch()
+    sprites = createSprites(batch)
+    window.clear()
+    batch.draw()
+
+def createSprites(batch):
+    sprites = []
 
     for row in range(SIZE_Y):
         for col in range(SIZE_X):
@@ -21,11 +29,20 @@ def draw():
             img = None
 
             if tile.__class__ is Tree:
-                img = loadImage('tree.png')
+                img = pyglet.resource.image('data/tree.png')
             elif tile.__class__ is Food:
-                img = loadImage('food.png')
+                img = pyglet.resource.image('data/food.png')
             else:
-                img = loadImage('tile.png')
+                img = pyglet.resource.image('data/tile.png')
 
+            img.width = tileSize
+            img.height = tileSize
 
-            image(img, col * tileSize, row * tileSize, tileSize, tileSize)
+            sprites.append(
+                pyglet.sprite.Sprite(
+                    img, col * tileSize, row * tileSize, batch=batch)
+            )
+
+    return sprites
+
+pyglet.app.run()
