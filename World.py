@@ -1,9 +1,10 @@
 import random
+from Creature import *
 
 class Tile:
 
     def __init__(self):
-        pass
+        self.contains = None
 
     def __repr__(self):
         return " "
@@ -35,12 +36,14 @@ class Tree:
 
 class World:
 
-    tileClasses = [Tile, Food, Tree]
-    tileProbs   = [97  , 1   , 2   ]
+    tileClasses = [Tile, Food, Tree, Creature]
+    tileProbs   = [97  , 1   , 2   ,    0    ]
 
     def __init__(self, width = 100, height = 100):
         self.tiles = \
             [[self.createTile() for x in range(width)] for y in range(height)]
+        self.width = width
+        self.height = height
 
     def createTile(self):
         tileClass = self._weightedChoice(self.tileClasses, self.tileProbs)
@@ -56,11 +59,23 @@ class World:
         # all weights are 0
         return random.choice(elements)
 
-'''
- Are actions handled in World class? We can move this to the Creature, but it
- made most sense to me here, based on what we have now. Here is a reproduction
- method that can handle any number of parents.
-'''
+    def generatePopulation(size = 20):
+        population = [Creature() for i in range(size)]
+        xTiles = range(self.width)
+        yTiles = range(self.height)
+        while population != []:
+            tileX = random.choice(xTiles)
+            tileY = random.choice(yTiles)
+            self.tiles[tileX][tileY].contains = random.choice(population)
+            xTiles.remove(tileX)
+            yTiles.remove(tileY)
+
+
+    '''
+     Are actions handled in World class? We can move this to the Creature, but it
+     made most sense to me here, based on what we have now. Here is a reproduction
+     method that can handle any number of parents.
+    '''
 
     def reproduction(parents):
         parents = [p.genome for p in parents]

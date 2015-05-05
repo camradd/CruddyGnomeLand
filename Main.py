@@ -1,3 +1,4 @@
+from graphics import *
 from World import *
 import math, time
 
@@ -6,12 +7,10 @@ SIZE_Y = 70
 tileSize = 10
 width = SIZE_X * tileSize
 height = SIZE_Y * tileSize
-
 world = World(SIZE_X, SIZE_Y)
 
-def setup():
-    size(width, height)
-    noStroke()
+def main():
+    win = GraphWin("CruddyGnomeLand", sizeX*tileSize, sizeX*tileSize)
 
 def draw():
 
