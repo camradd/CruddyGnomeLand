@@ -58,7 +58,7 @@ class Creature(TileObject.TileObject):
         self.health = 1.0
         self.lastEffect = 0
         self.lastAction = None
-        self.world = None
+        self.tile = None
 
         if genome == None:
             self.evalWeights = \
@@ -78,7 +78,11 @@ class Creature(TileObject.TileObject):
 
     @property
     def sight(self):
-        return world.getSight(self)
+        return self.world.getSight(self)
+
+    @property
+    def world(self):
+        return None if self.tile == None else self.tile.world
 
     def __repr__(self):
         return "^_^"
@@ -93,19 +97,26 @@ class Creature(TileObject.TileObject):
     def effect(self, creature):
         r = 0
         if creature.health * random.uniform(0,2) > self.health:
-            r = -health * random.uniform(.1,.5)
+            r = -creature.health * random.uniform(.1,.5)
         else:
-            r = health * random.uniform(.3,1) #Bugs wHOoO0OoOoOoOoOoOoOoOoOoOoOo?
+            r = creature.health * random.uniform(.3,1)
         self.lastEffect = r
         return r
 
     def canEnter(self, creature):
-        return False if self.lastEffect < 0 else True
+        r = False if self.lastEffect < 0 else True
+        if r == True:
+            self.die()
+        return r
 
-    def changeHealth(delta):
+    def changeHealth(self, delta):
         self.health = max(min(self.health + delta, 1), 0)
         if self.health == 0:
-            self.world.removeCreature(self)
+            self.die()
+
+    def die(self):
+        if self.tile == None: return
+        self.tile.removeTileObject(self)
 
     def makeAction(self):
         probs = self.actNet.propagate(input = self.sight + [self.health])
@@ -115,15 +126,15 @@ class Creature(TileObject.TileObject):
     def step(self):
         self.lastAction = self.makeAction()
         self.world.act(self, self.lastAction)
-        self.changeHealth(-.005)
+        self.changeHealth(-.001)
 
-        if random.uniform(0,1) < .0005:
-            self.reproduce()
+        if self.health > 0 and random.uniform(0,1) < .0005:
+            self.world.spawnCreature(self.reproduce())
 
     def reproduce(self, orgy = True):
         nearby = self.world.getNearbyCreatures(self)
         if len(nearby) == 0:
-            return Creature(mutation(parents[0]))
+            return Creature(self.mutate(self.genome))
         else:
             if orgy == True:
                 parents = [p.genome for p in nearby + [self]]
@@ -132,18 +143,17 @@ class Creature(TileObject.TileObject):
                     parents.remove(p1)
                     p2 = random.choice(parents)
                     parents.remove(p2)
-                    parents.append(crossover(p1,p2))
-                return Creature(mutation(parents[0]))
+                    parents.append(self.crossover(p1,p2))
+                return Creature(self.mutate(parents[0]))
             else:
-                return mutation(crossover(random.choice(nearby).genome, self.genome))
+                return self.mutate(self.crossover(random.choice(nearby).genome, self.genome))
 
-    def mutation(genome, rate = .3):
+    def mutate(self, genome, rate = .3):
         return [
-            g + random.uniform(-.5,.5) if \
-            random.uniform(0,1) < rate else g for g in genome
+            g + random.uniform(-.5,.5) if random.uniform(0,1) < rate else g for g in genome
         ]
 
-    def crossover(mateGenome, partnerGenome):
+    def crossover(self, mateGenome, partnerGenome):
         pivot = random.choice(range(len(mateGenome)))
         return [
             mateGenome[i] if i < pivot else \

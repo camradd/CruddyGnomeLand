@@ -32,6 +32,10 @@ class Food(TileObject):
     def effect(self, creature):
         return 0.2
 
+    def canEnter(self, creature):
+        self.tile.removeTileObject(self)
+        return True
+
 class Tree(TileObject):
 
     '''

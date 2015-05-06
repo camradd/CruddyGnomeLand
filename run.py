@@ -42,4 +42,8 @@ def setSpriteImages():
             img = tileImages[tileObject.__class__]
             sprites[row][col].image = img
 
+def step(dx):
+    world.step()
+pyglet.clock.schedule_interval(step, 0.01)
+
 pyglet.app.run()

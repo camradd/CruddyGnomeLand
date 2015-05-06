@@ -9,12 +9,13 @@ class Tile:
      up to the Tile and summed/or logically conjoined.
     '''
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, world):
         to = TileObject.TileObject()
         to.tile = self
         self.tileObjects = [to]
         self.x = x
         self.y = y
+        self.world = world
 
     '''
      Adds a tile object in this tile. Rules about with objects can coexist are
@@ -37,6 +38,9 @@ class Tile:
                 r = tileObject
         return r
 
+    def isEmpty(self):
+        return len(self.tileObjects) == 1
+
     def tileObjectForType(self, tileObjectType):
         for tileObject in self.tileObjects:
             if tileObject.__class__ is tileObjectType:
@@ -44,7 +48,7 @@ class Tile:
         return None
 
     def containsType(self, tileObjectType):
-        return self.tileObjectType != None
+        return self.tileObjectForType(tileObjectType) != None
 
     def effect(self, creature):
         return sum([to.effect(creature) for to in self.tileObjects])
@@ -53,7 +57,7 @@ class Tile:
         return not (False in [to.canEnter(creature) for to in self.tileObjects])
 
     def step(self):
-        if random.uniform(0, 1) < 0.005:
+        if random.uniform(0, 1) < 0.0001:
             self.addTileObject(TileObject.Food())
 
         for tileObject in self.tileObjects:
