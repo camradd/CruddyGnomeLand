@@ -1,4 +1,4 @@
-import conx, math, random, numpy
+import World, conx, math, random, numpy
 
 class EvalNet(conx.BackpropNetwork):
 
@@ -19,7 +19,7 @@ class EvalNet(conx.BackpropNetwork):
         self.setMomentum(0.9)
         self.setTolerance(0.1)
 
-class ActNet(conx.SigmaNetwork):
+class ActNet(conx.BackpropNetwork):
 
     '''
     Action Network. Inherited trait that changes over the lifetime of the
@@ -32,15 +32,15 @@ class ActNet(conx.SigmaNetwork):
     '''
 
     def __init__(self):
-        conx.SigmaNetwork.__init__(self)
+        conx.BackpropNetwork.__init__(self)
         self.inputSize = 5
-        self.outputSize = 5
+        self.outputSize = 2
         self.addLayers(self.inputSize, self.outputSize)
         self.setEpsilon(0.3)
         self.setMomentum(0.9)
         self.setTolerance(0.1)
 
-class Creature:
+class Creature(World.TileObject):
 
     '''
     Creature class. Each creature has an action network, determining what action
@@ -48,11 +48,17 @@ class Creature:
     whether the action bettered or worsened the wellbeing of the creature.
     '''
 
+    visibilityIndex = 10
+
     def __init__(self, genome = None):
         self.evalNet = EvalNet()
         self.actNet = ActNet()
-        self.sight = [[]*4 for i in range(4)]
+        self.sight = [0 for i in range(4)]
         self.health = 1.0
+        self.location = None
+        self.lastEffect = 0
+        self.lastAction = None
+        self.world = None
 
         if genome == None:
             self.evalWeights = \
@@ -80,3 +86,28 @@ class Creature:
             for o in range(net.outputSize): # to node
                 net.setWeight("input", i,"output", o, weights[index])
                 index += 1
+
+    def effect(self, creature):
+        r = 0
+        if creature.health * random.uniform(0,2) > self.health:
+            r = -health * random.uniform(.3,1)
+        else:
+            r = health * random.uniform(.3,1) #Bugs wHOoO0OoOoOoOoOoOoOoOoOoOoOo?
+        self.lastEffect = r
+        return r
+
+    def canEnter(self, creature):
+        return False if self.lastEffect < 0 else True
+
+    def changeHealth(delta):
+        # with bounds of 0 and 1
+        self.health = max(min(self.health + delta, 1), 0)
+
+    def makeAction(self):
+        probs = self.actNet.propagate(input = self.sight + [self.health])
+        action = [1 if p > random.uniform(0,1) else 0 for p in probs]
+        return action
+
+    def step(self):
+        self.lastAction = self.makeAction()
+        self.world.act(self, self.lastAction)
