@@ -1,53 +1,127 @@
-import random
-from Creature import *
+import random, Creature
 
 class Tile:
 
+    '''
+     The Tile class represents a single tile in the world. It has TileObjects as
+     children that represent things inside the tile (tree, food, creature, etc).
+     The TileObjects decide their effects and accessability, which is prograted
+     up to the Tile and summed/or logically conjoined.
+    '''
+
     def __init__(self):
-        self.contains = None
+        self.tileObjects = [TileObject()]
 
-    def __repr__(self):
-        return " "
+    '''
+     Adds a tile object in this tile. Rules about with objects can coexist are
+     currently enforced crudely using the visibilityIndex.
+    '''
+    def addTileObject(self, tileObject):
+        if self.visibleTileObject().visibilityIndex>tileObject.visibilityIndex:
+            return
+        self.tileObjects.push(tileObject)
 
-class Food:
+    def removeTileObject(self, tileObject):
+        self.tileObjects.remove(tileObject)
+
+    def visibleTileObject(self):
+        r = tileObjects[0]
+        for tileObject in self.tileObjects:
+            if tileObject.visibilityIndex > r.visibilityIndex:
+                r = tileObject
+        return r
+
+    def tileObjectForType(self, tileObjectType):
+        for tileObject in self.tileObjects:
+            if tileObject.__class__ is tileObjectType:
+                return tileObject
+        return None
+
+    def containsType(self, tileObjectType):
+        return self.tileObjectType != None
+
+    def effect(self, creature):
+        return sum([to.effect(creature) for to in self.tileObjects])
+
+    def canEnter(self, creature):
+        return not (False in [to.canEnter(creature) for to in self.tileObjects])
+
+    def step(self):
+        if random.uniform(0, 1) < 0.005:
+            self.addTileObject(Food())
+
+        for tileObject in self.tileObjects:
+            tileObject.step()
+
+    def stepFinished(self):
+        for tileObject in self.tileObjects:
+            tileObject.stepFinished()
+
+class TileObject:
+
+    '''
+     The TileObject class represents something inside a tile in the world
+     (tree, food, creature, etc). The TileObjects decide their effects and
+     accessability, which is prograted up to the Tile and summed/or logically
+     conjoined. The base class TileObject represents the ground.
+    '''
+    visibilityIndex = 0
+
+    def effect(self, creature):
+        return 0
+
+    def canEnter(self, creature):
+        return True
+
+    def step(self):
+        pass
+
+    def stepFinished(self):
+        pass
+
+class Food(TileObject):
 
     '''
     Food object. Has variable nutrition value, which represents the amount of
     health increase it causes.
     '''
+    visibilityIndex = 5
 
-    def __init__(self):
-        self.affect = 0.2
+    def effect(self, creature):
+        return 0.2
 
-    def __repr__(self):
-        return "f"
-
-class Tree:
+class Tree(TileObject):
 
     '''
     Tree object, in world. Carries a damage value.
     '''
 
-    def __init__(self):
-        self.affect = -0.2
+    visibilityIndex = 15
 
-    def __repr__(self):
-        return "T"
+    def effect(self, creature):
+        return -0.2
 
 class World:
 
-    tileClasses = [Tile, Food, Tree, Creature]
-    tileProbs   = [97  , 1   , 2   ,    0    ]
+    tileObjectClasses   = [None, Food, Tree, Creature.Creature]
+    tileObjectProbs     = [97  , 0.8 , 1.7 , 0.05             ]
 
     def __init__(self, width = 100, height = 100):
         self.tiles = \
             [[self.createTile() for x in range(width)] for y in range(height)]
+
+        for i in range(width * height * 0.05):
+            self.spawnCreature(Creature.Creature())
+
         self.width = width
         self.height = height
 
     def createTile(self):
-        tileClass = self._weightedChoice(self.tileClasses, self.tileProbs)
-        return tileClass()
+        tile = Tile()
+        tileObjectClass = \
+            self._weightedChoice(self.tileObjectClasses, self.tileObjectProbs)
+        if tileObjectClass != None:
+            tile.addTileObject(tileObjectClass())
 
     def _weightedChoice(self, elements, weights):
         randomNumber = random.uniform(0, sum(weights))
@@ -58,17 +132,6 @@ class World:
                 return elements[i]
         # all weights are 0
         return random.choice(elements)
-
-    def generatePopulation(size = 20):
-        population = [Creature() for i in range(size)]
-        xTiles = range(self.width)
-        yTiles = range(self.height)
-        while population != []:
-            tileX = random.choice(xTiles)
-            tileY = random.choice(yTiles)
-            self.tiles[tileX][tileY].contains = random.choice(population)
-            xTiles.remove(tileX)
-            yTiles.remove(tileY)
 
 
     '''
