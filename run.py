@@ -23,7 +23,8 @@ tileImages = {
     World.Tile: makeTileImg('img/tile.png')
 }
 sprites = [
-    [pyglet.sprite.Sprite(tileImages[World.Tile], col*tileSize, row*tileSize, batch=batch)
+    [pyglet.sprite.Sprite(tileImages[World.Tile], col*tileSize, row*tileSize,
+                            batch=batch)
         for col in range(SIZE_X)]
     for row in range(SIZE_Y)
 ]
