@@ -33,11 +33,12 @@ class World:
 
     def getNearbyCreatures(self, creature, distance=4):
         creatures = []
-        for yd in range(-distance, distance+1): for xd in range(-distance, distance+1):
-            if yd == 0 and xd == 0: continue
-            y, x = y + yd % self.height, x + xd % self.width
-            c = self.tiles[y][x].tileObjectForType(Creature.Creature)
-            if c !== None: creatures.append[c]
+        for yd in range(-distance, distance+1):
+            for xd in range(-distance, distance+1):
+                if yd == 0 and xd == 0: continue
+                y, x = y + yd % self.height, x + xd % self.width
+                c = self.tiles[y][x].tileObjectForType(Creature.Creature)
+                if c != None: creatures.append[c]
         return creatures
 
     def getSight(self, creature, distance=4):
@@ -48,15 +49,17 @@ class World:
         sight = [0] * (len(tileObjectClasses) - 1)
         i = 0
         loc = (creature.tile.x, creature.tile.y)
-        for axis in [0, 1]: for d in [-1, 1]: for toClass in tileObjectClasses:
-            if toClass == None: continue
-            for dist in range(distance):
-                nLoc = copy.deepcopy(loc)
-                nLoc[axis] = \
-                    (nLoc[axis] + (d * (dist + 1))) % (self.width if axis == 0 else self.height)
-                x, y = nLoc
-                if self.tiles[y][x].containsType(toClass):
-                    sight[i] = 1 - (dist / (distance + 1))
+        for axis in [0, 1]:
+            for d in [-1, 1]:
+                for toClass in tileObjectClasses:
+                    if toClass == None: continue
+                    for dist in range(distance):
+                        nLoc = copy.deepcopy(loc)
+                        nLoc[axis] = (nLoc[axis] + (d * (dist + 1)))\
+                            % (self.width if axis == 0 else self.height)
+                        x, y = nLoc
+                        if self.tiles[y][x].containsType(toClass):
+                            sight[i] = 1 - (dist / (distance + 1))
             i += 1
         return sight
 
