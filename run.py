@@ -1,8 +1,8 @@
 import TileObject, World, Creature, pyglet
 
-SIZE_X = 120
-SIZE_Y = 70
-tileSize = 10
+SIZE_X = 75
+SIZE_Y = 45
+tileSize = 16
 world = World.World(SIZE_X, SIZE_Y)
 
 window = pyglet.window.Window(
