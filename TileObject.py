@@ -7,6 +7,7 @@ class TileObject:
      conjoined. The base class TileObject represents the ground.
     '''
     visibilityIndex = 0
+    tile = None
 
     def effect(self, creature):
         return 0

@@ -9,8 +9,12 @@ class Tile:
      up to the Tile and summed/or logically conjoined.
     '''
 
-    def __init__(self):
-        self.tileObjects = [TileObject.TileObject()]
+    def __init__(self, x, y):
+        to = TileObject.TileObject()
+        to.tile = self
+        self.tileObjects = [to]
+        self.x = x
+        self.y = y
 
     '''
      Adds a tile object in this tile. Rules about with objects can coexist are
@@ -19,9 +23,11 @@ class Tile:
     def addTileObject(self, tileObject):
         if self.visibleTileObject().visibilityIndex>tileObject.visibilityIndex:
             return
+        tileObject.tile = self
         self.tileObjects.append(tileObject)
 
     def removeTileObject(self, tileObject):
+        tileObject.tile = None
         self.tileObjects.remove(tileObject)
 
     def visibleTileObject(self):

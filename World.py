@@ -9,13 +9,13 @@ class World:
 
     def __init__(self, width = 100, height = 100):
         self.tiles = \
-            [[self.createTile() for x in range(width)] for y in range(height)]
+            [[self.createTile(x, y) for x in range(width)] for y in range(height)]
 
         self.width = width
         self.height = height
 
-    def createTile(self):
-        tile = Tile.Tile()
+    def createTile(self, x, y):
+        tile = Tile.Tile(x, y)
         tileObjectClass = \
             self._weightedChoice(self.tileObjectClasses, self.tileObjectProbs)
         if tileObjectClass != None:
@@ -29,38 +29,32 @@ class World:
             w += weights[i]
             if w > randomNumber:
                 return elements[i]
-        # all weights are 0
         return random.choice(elements)
 
+    def getNearbyCreatures(self, creature):
+        pass
 
-    '''
-     Are actions handled in World class? We can move this to the Creature, but it
-     made most sense to me here, based on what we have now. Here is a reproduction
-     method that can handle any number of parents.
-    '''
+    def getSight(self, creature, distance=4):
+        '''
+         [W, E, N, S] where each is three floats from 0 to 1 (food, tree, creature).
+         It's a flat array. The float specifies closeness (0 is farther).
+        '''
+        sight = [0] * (len(tileObjectClasses) - 1)
+        i = 0
+        loc = (creature.tile.x, creature.tile.y)
+        for axis in [0, 1]: for d in [-1, 1]: for toClass in tileObjectClasses:
+            if toClass == None: continue
+            for dist in range(distance):
+                nLoc = copy.deepcopy(loc)
+                nLoc[axis] = (d * (dist + 1)) % (self.width if axis == 0 else self.height)
+                x, y = nLoc
+                if self.tiles[y][x].containsType(toClass):
+                    sight[i] = 1 - (dist / (distance + 1))
+            i += 1
+        return sight
 
-    def reproduction(parents):
-        parents = [p.genome for p in parents]
-        if len(parents) == 1:
-            return Creature(mutation(parents[0]))
-        else:
-            while len(parents) > 1:
-                p1 = random.choice(parents)
-                parents.remove(p1)
-                p2 = random.choice(parents)
-                parents.remove(p2)
-                parents.append(crossover(p1,p2))
-            return Creature(mutation(parents[0]))
+    def act(self, creature, action):
+        pass
 
-    def mutation(genome, rate = .3):
-        return [
-            g + random.uniform(-.5,.5) if \
-            random.uniform(0,1) < rate else g for g in genome
-        ]
-
-    def crossover(mateGenome, partnerGenome):
-        pivot = random.choice(range(len(mateGenome)))
-        return [
-            mateGenome[i] if i < pivot else \
-            partnerGenome[i] for i in range(len(mateGenome))
-        ]
+    def removeCreature(self, creature):
+        pass
