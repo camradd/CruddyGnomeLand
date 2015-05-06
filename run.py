@@ -30,10 +30,18 @@ sprites = [
     for row in range(SIZE_Y)
 ]
 
+
+
 @window.event
 def on_draw():
+    currentTime = pyglet.text.Label('%d' %world.time,
+                              font_name='mono',
+                              font_size= 12,
+                              x=window.width//100, y=window.height//100,
+                              anchor_x='left', anchor_y='bottom')
     setSpriteImages()
     batch.draw()
+    currentTime.draw()
 
 def setSpriteImages():
     for row in range(SIZE_Y):
@@ -44,6 +52,7 @@ def setSpriteImages():
 
 def step(dx):
     world.step()
+
 pyglet.clock.schedule_interval(step, 0.01)
 
 pyglet.app.run()

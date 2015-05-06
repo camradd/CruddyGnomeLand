@@ -13,8 +13,10 @@ class World:
 
         self.width = width
         self.height = height
+        self.time = 0
 
     def step(self, steps=1):
+        self.time += 1
         flatTiles = [self.tiles[r][c] for c in range(self.width) for r in range(self.height)]
         random.shuffle(flatTiles)
 
@@ -23,6 +25,7 @@ class World:
 
         for tile in flatTiles:
             tile.stepFinished()
+
 
     def createTile(self, x, y):
         tile = Tile.Tile(x, y, self)
