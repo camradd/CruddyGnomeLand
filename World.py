@@ -5,7 +5,7 @@ class World:
     tileObjectClasses = \
         [None, TileObject.Food, TileObject.Tree, Creature.Creature]
     tileObjectProbs = \
-        [97  , 0.8            , 1.7            , 0.05             ]
+        [97  , 0.8            , 1.7            , 0.5              ]
 
     def __init__(self, width = 100, height = 100):
         self.tiles = \
