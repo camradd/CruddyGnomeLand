@@ -6,13 +6,14 @@ class EvalNet(conx.BackpropNetwork):
     Evaluation Network. Inherited trait that does not change over the lifetime
     of the creature. The evaluation network takes as input the closeness of
     landscape features, food, other creatures, etc in each of the four
-    directions (within the visible distance),  creature's current health.
-    The evaluation network then outputs a real valued scalar.
+    directions (within the visible distance), and  creature's current health.
+    These result in 13 inputs. The evaluation network then outputs a real valued
+    scalar.
     '''
 
     def __init__(self):
         conx.BackpropNetwork.__init__(self)
-        self.inputSize = 5
+        self.inputSize = 13
         self.outputSize = 1
         self.addLayers(self.inputSize, self.outputSize)
         self.setEpsilon(0.3)
@@ -33,7 +34,7 @@ class ActNet(conx.BackpropNetwork):
 
     def __init__(self):
         conx.BackpropNetwork.__init__(self)
-        self.inputSize = 5
+        self.inputSize = 13
         self.outputSize = 2
         self.addLayers(self.inputSize, self.outputSize)
         self.setEpsilon(0.3)
@@ -50,12 +51,11 @@ class Creature(TileObject.TileObject):
 
     visibilityIndex = 10
 
+
     def __init__(self, genome = None):
         self.evalNet = EvalNet()
         self.actNet = ActNet()
-        self.sight = [0 for i in range(4)]
         self.health = 1.0
-        self.location = None
         self.lastEffect = 0
         self.lastAction = None
         self.world = None
@@ -76,11 +76,14 @@ class Creature(TileObject.TileObject):
         self.setWeights(self.evalNet, self.evalWeights)
         self.setWeights(self.actNet, self.actWeights)
 
+    @property
+    def sight(self):
+        return world.getSight(self)
+
     def __repr__(self):
         return "^_^"
 
     def setWeights(self, net, weights):
-        #setWeight(self, fromName, fromPos, toName, toPos, value)
         index = 0
         for i in range(net.inputSize): # from node
             for o in range(net.outputSize): # to node
@@ -90,7 +93,7 @@ class Creature(TileObject.TileObject):
     def effect(self, creature):
         r = 0
         if creature.health * random.uniform(0,2) > self.health:
-            r = -health * random.uniform(.3,1)
+            r = -health * random.uniform(.1,.5)
         else:
             r = health * random.uniform(.3,1) #Bugs wHOoO0OoOoOoOoOoOoOoOoOoOoOo?
         self.lastEffect = r
@@ -100,8 +103,9 @@ class Creature(TileObject.TileObject):
         return False if self.lastEffect < 0 else True
 
     def changeHealth(delta):
-        # with bounds of 0 and 1
         self.health = max(min(self.health + delta, 1), 0)
+        if self.health == 0:
+            self.world.removeCreature(self)
 
     def makeAction(self):
         probs = self.actNet.propagate(input = self.sight + [self.health])
@@ -111,3 +115,37 @@ class Creature(TileObject.TileObject):
     def step(self):
         self.lastAction = self.makeAction()
         self.world.act(self, self.lastAction)
+        self.changeHealth(-.005)
+
+        if random.uniform(0,1) < .0005:
+            self.reproduce()
+
+    def reproduce(self, orgy = True):
+        nearby = self.world.getNearbyCreatures(self)
+        if len(nearby) == 0:
+            return Creature(mutation(parents[0]))
+        else:
+            if orgy == True:
+                parents = [p.genome for p in nearby + [self]]
+                while len(parents) > 1:
+                    p1 = random.choice(parents)
+                    parents.remove(p1)
+                    p2 = random.choice(parents)
+                    parents.remove(p2)
+                    parents.append(crossover(p1,p2))
+                return Creature(mutation(parents[0]))
+            else:
+                return mutation(crossover(random.choice(nearby).genome, self.genome))
+
+    def mutation(genome, rate = .3):
+        return [
+            g + random.uniform(-.5,.5) if \
+            random.uniform(0,1) < rate else g for g in genome
+        ]
+
+    def crossover(mateGenome, partnerGenome):
+        pivot = random.choice(range(len(mateGenome)))
+        return [
+            mateGenome[i] if i < pivot else \
+            partnerGenome[i] for i in range(len(mateGenome))
+        ]
