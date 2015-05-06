@@ -10,7 +10,7 @@ window = pyglet.window.Window(
     height = SIZE_Y * tileSize
 )
 
-def makeImg(path):
+def makeTileImg(path):
     img = pyglet.resource.image(path)
     img.width = tileSize
     img.height = tileSize
@@ -18,9 +18,9 @@ def makeImg(path):
 
 batch = pyglet.graphics.Batch()
 tileImages = {
-    World.Tree: makeImg('data/tree.png'),
-    World.Food: makeImg('data/food.png'),
-    World.Tile: makeImg('data/tile.png')
+    World.Tree: makeTileImg('img/tree.png'),
+    World.Food: makeTileImg('img/food.png'),
+    World.Tile: makeTileImg('img/tile.png')
 }
 sprites = [
     [pyglet.sprite.Sprite(tileImages[World.Tile], col*tileSize, row*tileSize, batch=batch)
@@ -31,7 +31,6 @@ sprites = [
 @window.event
 def on_draw():
     setSpriteImages()
-    # window.clear()
     batch.draw()
 
 def setSpriteImages():
@@ -40,10 +39,5 @@ def setSpriteImages():
             tile = world.tiles[row][col]
             img = tileImages[tile.__class__]
             sprites[row][col].image = img
-
-def update(dt):
-    global world
-    world = World.World(SIZE_X, SIZE_Y)
-pyglet.clock.schedule_interval(update, 0.3)
 
 pyglet.app.run()
