@@ -42,3 +42,6 @@ class Tree(TileObject):
 
     def effect(self, creature):
         return -0.2
+
+    def canEnter(self, creature):
+        return False

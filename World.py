@@ -31,8 +31,14 @@ class World:
                 return elements[i]
         return random.choice(elements)
 
-    def getNearbyCreatures(self, creature):
-        pass
+    def getNearbyCreatures(self, creature, distance=4):
+        creatures = []
+        for yd in range(-distance, distance+1): for xd in range(-distance, distance+1):
+            if yd == 0 and xd == 0: continue
+            y, x = y + yd % self.height, x + xd % self.width
+            c = self.tiles[y][x].tileObjectForType(Creature.Creature)
+            if c !== None: creatures.append[c]
+        return creatures
 
     def getSight(self, creature, distance=4):
         '''
@@ -46,7 +52,8 @@ class World:
             if toClass == None: continue
             for dist in range(distance):
                 nLoc = copy.deepcopy(loc)
-                nLoc[axis] = (d * (dist + 1)) % (self.width if axis == 0 else self.height)
+                nLoc[axis] = \
+                    (nLoc[axis] + (d * (dist + 1))) % (self.width if axis == 0 else self.height)
                 x, y = nLoc
                 if self.tiles[y][x].containsType(toClass):
                     sight[i] = 1 - (dist / (distance + 1))
@@ -54,7 +61,16 @@ class World:
         return sight
 
     def act(self, creature, action):
-        pass
+        axis = action[0]
+        d = -1 if action[1] == 0 else 1
+        loc = (creature.tile.x, creature.tile.y)
+        loc[axis] = (loc[axis] + d) % (self.width if axis == 0 else self.height)
+        x, y = loc
+        tile = self.tiles[y][x]
+        creature.changeHealth(tile.effect(creature))
+        if (tile.canEnter(creature)):
+            creature.tile.removeTileObject(creature)
+            tile.addTileObject(creature)
 
     def removeCreature(self, creature):
-        pass
+        creature.tile.removeTileObject(creature)

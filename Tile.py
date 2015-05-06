@@ -21,7 +21,7 @@ class Tile:
      currently enforced crudely using the visibilityIndex.
     '''
     def addTileObject(self, tileObject):
-        if self.visibleTileObject().visibilityIndex>tileObject.visibilityIndex:
+        if self.visibleTileObject().visibilityIndex > tileObject.visibilityIndex:
             return
         tileObject.tile = self
         self.tileObjects.append(tileObject)
