@@ -1,4 +1,4 @@
-import World, pyglet
+import TileObject, World, Creature, pyglet
 
 SIZE_X = 120
 SIZE_Y = 70
@@ -18,13 +18,14 @@ def makeTileImg(path):
 
 batch = pyglet.graphics.Batch()
 tileImages = {
-    World.Tree: makeTileImg('img/tree.png'),
-    World.Food: makeTileImg('img/food.png'),
-    World.Tile: makeTileImg('img/tile.png')
+    TileObject.Tree:       makeTileImg('img/tree.png'),
+    TileObject.Food:       makeTileImg('img/food.png'),
+    TileObject.TileObject: makeTileImg('img/tile.png'),
+    Creature.Creature:     makeTileImg('img/creature.png')
 }
 sprites = [
-    [pyglet.sprite.Sprite(tileImages[World.Tile], col*tileSize, row*tileSize,
-                            batch=batch)
+    [pyglet.sprite.Sprite(tileImages[TileObject.TileObject],
+                            col*tileSize, row*tileSize, batch=batch)
         for col in range(SIZE_X)]
     for row in range(SIZE_Y)
 ]
@@ -37,8 +38,8 @@ def on_draw():
 def setSpriteImages():
     for row in range(SIZE_Y):
         for col in range(SIZE_X):
-            tile = world.tiles[row][col]
-            img = tileImages[tile.__class__]
+            tileObject = world.tiles[row][col].visibleTileObject()
+            img = tileImages[tileObject.__class__]
             sprites[row][col].image = img
 
 pyglet.app.run()

@@ -1,4 +1,4 @@
-import World, conx, math, random, numpy
+import TileObject, conx, math, random, numpy
 
 class EvalNet(conx.BackpropNetwork):
 
@@ -40,7 +40,7 @@ class ActNet(conx.BackpropNetwork):
         self.setMomentum(0.9)
         self.setTolerance(0.1)
 
-class Creature(World.TileObject):
+class Creature(TileObject.TileObject):
 
     '''
     Creature class. Each creature has an action network, determining what action
