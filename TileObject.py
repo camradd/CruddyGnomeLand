@@ -45,7 +45,7 @@ class Tree(TileObject):
     visibilityIndex = 15
 
     def effect(self, creature):
-        return -0.2
+        return -0.1
 
     def canEnter(self, creature):
         return False

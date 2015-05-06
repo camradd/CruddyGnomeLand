@@ -34,12 +34,15 @@ class ActNet(conx.BackpropNetwork):
 
     def __init__(self):
         conx.BackpropNetwork.__init__(self)
+        self.log = False
         self.inputSize = 13
         self.outputSize = 2
         self.addLayers(self.inputSize, self.outputSize)
         self.setEpsilon(0.3)
         self.setMomentum(0.9)
         self.setTolerance(0.1)
+
+    def Print(self, str): pass
 
 class Creature(TileObject.TileObject):
 
@@ -56,25 +59,19 @@ class Creature(TileObject.TileObject):
         self.evalNet = EvalNet()
         self.actNet = ActNet()
         self.health = 1.0
-        self.lastEffect = 0
-        self.lastAction = None
         self.tile = None
+        self.lastAction = None
 
         if genome == None:
-            self.evalWeights = \
-                self.evalNet.getWeights("input", "output").flatten().tolist()
-            self.actWeights = \
-                self.actNet.getWeights("input", "output").flatten().tolist()
-            self.genome = self.evalWeights + self.actWeights
+            evalWeights = self.evalNet.getWeights("input", "output").flatten().tolist()
+            actWeights = self.actNet.getWeights("input", "output").flatten().tolist()
+            self.genome = evalWeights + actWeights
 
         else:
             evalWeightSize = self.evalNet.inputSize * self.evalNet.outputSize
             self.genome = genome
-            self.evalWeights = self.genome[0:evalWeightSize]
-            self.actWeights = self.genome[evalWeightSize:]
-
-        self.setWeights(self.evalNet, self.evalWeights)
-        self.setWeights(self.actNet, self.actWeights)
+            self.setWeights(self.evalNet, self.genome[0:evalWeightSize])
+            self.setWeights(self.actNet, self.genome[evalWeightSize:])
 
     @property
     def sight(self):
@@ -124,12 +121,25 @@ class Creature(TileObject.TileObject):
         return action
 
     def step(self):
+        self.lastInput = self.sight + [self.health]
+        self.lastEval = self.evalNet.propagate(input = self.lastInput)
         self.lastAction = self.makeAction()
         self.world.act(self, self.lastAction)
-        self.changeHealth(-.001)
+        self.changeHealth(-.0005)
 
-        if self.health > 0 and random.uniform(0,1) < .0005:
+        if self.health > 0 and random.uniform(0,1) < .002:
             self.world.spawnCreature(self.reproduce())
+
+    def stepFinished(self):
+        if self.lastAction == None: return
+        newEval = self.evalNet.propagate(input = self.sight + [self.health])
+        targets = self.lastAction
+        if newEval < self.lastEval:
+            targets = [0 if o == 1 else 1 for o in targets]
+        self.actNet.setInputs([self.lastInput])
+        self.actNet.setTargets([targets])
+        self.actNet.train(1)
+
 
     def reproduce(self, orgy = True):
         nearby = self.world.getNearbyCreatures(self)
