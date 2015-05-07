@@ -1,5 +1,8 @@
 import TileObject, World, Creature, pyglet
 
+f = None
+data = None
+
 SIZE_X = 75
 SIZE_Y = 45
 tileSize = 16
@@ -9,6 +12,7 @@ window = pyglet.window.Window(
     width  = SIZE_X * tileSize,
     height = SIZE_Y * tileSize
 )
+
 
 def makeTileImg(path):
     img = pyglet.resource.image(path)
@@ -34,16 +38,17 @@ sprites = [
 
 @window.event
 def on_draw():
-    currentState = pyglet.text.Label('time step: %d born: %d dead: %d' %(world.time, world.dead,
-                              world.born),
-                              font_name='mono',
-                              font_size= 12,
-                              x=window.width / 100, y=window.height / 100,
-                              anchor_x='left', anchor_y='bottom')
-
     setSpriteImages()
     batch.draw()
-    currentState.draw()
+    getCurrentState().draw()
+
+def getCurrentState():
+    return pyglet.text.Label('time step: %d  born: %d  dead: %d  alive: %d' %(world.time, world.born,
+                              world.dead, world.alive),
+                              font_name='mono',
+                              font_size= 10,
+                              x=window.width / 100, y=window.height / 100,
+                              anchor_x='left', anchor_y='bottom')
 
 def setSpriteImages():
     for row in range(SIZE_Y):
@@ -51,10 +56,41 @@ def setSpriteImages():
             tileObject = world.tiles[row][col].visibleTileObject()
             img = tileImages[tileObject.__class__]
             sprites[row][col].image = img
+'time step: %d  born: %d  dead: %d  alive: %d'
 
 def step(dx):
     world.step()
 
+    if world.saveData == True:
+        data = "%d %d %d %d\n" %(world.time, world.born, world.dead, world.alive)
+        f.write(data)
+
 pyglet.clock.schedule_interval(step, 0.01)
 
-pyglet.app.run()
+def main():
+    print "To begin simulation type 'run'."
+    print "To exit simulation, exit window."
+    print "To quit program type 'quit'."
+    print "To save data from run, type 'create file'."
+
+    while True:
+        commandLine = raw_input(">>> ")
+        if commandLine == 'run':
+            pyglet.app.run()
+        if commandLine == 'create file':
+            filename = raw_input("enter file name: ")
+            global f
+            f = open(filename, 'w')
+            f.write('timestep born dead alive\n')
+            world.saveData = True
+        if commandLine == 'quit':
+            if world.saveData == True:
+                genomes = [c.genome for c in world.getCreatures()]
+                s = str(genomes)
+                f.write(s)
+                f.close()
+            return False
+
+
+
+main()

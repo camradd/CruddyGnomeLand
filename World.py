@@ -5,7 +5,12 @@ class World:
     tileObjectClasses = \
         [None, TileObject.Food, TileObject.Tree, Creature.Creature]
     tileObjectProbs = \
-        [97  , 0.2            , 2.3            , 0.5              ]
+        [97  , .8            , 1.7            , 0.5              ]
+
+    born = 0
+    time = 0
+    dead = 0
+
 
     def __init__(self, width = 100, height = 100):
         self.tiles = \
@@ -13,9 +18,12 @@ class World:
 
         self.width = width
         self.height = height
-        self.time = 0
-        self.dead = 0
-        self.born = 0
+        self.saveData = False
+
+
+    @property
+    def alive(self):
+        return self.born - self.dead
 
     def step(self, steps=1):
         self.time += 1
@@ -35,6 +43,7 @@ class World:
             self._weightedChoice(self.tileObjectClasses, self.tileObjectProbs)
         if tileObjectClass != None:
             tile.addTileObject(tileObjectClass())
+            if tileObjectClass == Creature.Creature: self.born += 1
         return tile
 
     def _weightedChoice(self, elements, weights):
@@ -98,3 +107,11 @@ class World:
                 self.tiles[y][x].addTileObject(creature)
                 return
         print 'Overpopulation!'
+
+    def getCreatures(self):
+        creatures = []
+        for row in self.tiles:
+            for tileY in row:
+                c = tileY.tileObjectForType(Creature.Creature)
+                if c != None: creatures.append(c)
+        return creatures
