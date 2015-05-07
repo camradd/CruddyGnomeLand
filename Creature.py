@@ -113,6 +113,7 @@ class Creature(TileObject.TileObject):
 
     def die(self):
         if self.tile == None: return
+        self.world.dead += 1
         self.tile.removeTileObject(self)
 
     def makeAction(self):
@@ -142,6 +143,7 @@ class Creature(TileObject.TileObject):
 
 
     def reproduce(self, orgy = True):
+        self.world.born += 1
         nearby = self.world.getNearbyCreatures(self)
         if len(nearby) == 0:
             return Creature(self.mutate(self.genome))

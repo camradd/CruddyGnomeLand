@@ -34,14 +34,16 @@ sprites = [
 
 @window.event
 def on_draw():
-    currentTime = pyglet.text.Label('%d' %world.time,
+    currentState = pyglet.text.Label('time step: %d born: %d dead: %d' %(world.time, world.dead,
+                              world.born),
                               font_name='mono',
                               font_size= 12,
-                              x=window.width//100, y=window.height//100,
+                              x=window.width / 100, y=window.height / 100,
                               anchor_x='left', anchor_y='bottom')
+
     setSpriteImages()
     batch.draw()
-    currentTime.draw()
+    currentState.draw()
 
 def setSpriteImages():
     for row in range(SIZE_Y):

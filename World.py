@@ -5,7 +5,7 @@ class World:
     tileObjectClasses = \
         [None, TileObject.Food, TileObject.Tree, Creature.Creature]
     tileObjectProbs = \
-        [97  , 0.8            , 1.7            , 0.5              ]
+        [97  , 0.2            , 2.3            , 0.5              ]
 
     def __init__(self, width = 100, height = 100):
         self.tiles = \
@@ -14,6 +14,8 @@ class World:
         self.width = width
         self.height = height
         self.time = 0
+        self.dead = 0
+        self.born = 0
 
     def step(self, steps=1):
         self.time += 1

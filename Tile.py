@@ -57,7 +57,7 @@ class Tile:
         return not (False in [to.canEnter(creature) for to in self.tileObjects])
 
     def step(self):
-        if random.uniform(0, 1) < 0.0001:
+        if random.uniform(0, 1) < 0.00001:
             self.addTileObject(TileObject.Food())
 
         for tileObject in self.tileObjects:
