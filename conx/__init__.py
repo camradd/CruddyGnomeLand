@@ -20,7 +20,7 @@ __version__ = "$Revision: 2587 (standalone)$"
 
 import numpy.oldnumeric as Numeric
 import math, random, time, sys, operator
-print "Conx, version %s (standalone)" % __version__.split()[1]
+#print "Conx, version %s (standalone)" % __version__.split()[1]
 
 def reverse(lyst):
     """ Returns a reversed list. """
@@ -1204,7 +1204,9 @@ class Network(object):
         self.seed = value
         random.seed(self.seed)
         if self.verbosity >= 0:
-            print "Conx using seed:", self.seed
+            # print "Conx using seed:", self.seed
+            pass
+            
     def getConnection(self, lfrom, lto):
         """
         Returns the connection instance connecting the specified (string)
