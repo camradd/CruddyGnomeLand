@@ -56,14 +56,13 @@ def setSpriteImages():
             tileObject = world.tiles[row][col].visibleTileObject()
             img = tileImages[tileObject.__class__]
             sprites[row][col].image = img
-'time step: %d  born: %d  dead: %d  alive: %d'
 
 def step(dx):
     world.step()
 
-    if world.saveData == True:
-        data = "%d %d %d %d\n" %(world.time, world.born, world.dead, world.alive)
-        f.write(data)
+    if world.saveData == 'tstep':
+            data = "%d %d %d %d\n" %(world.time, world.born, world.dead, world.alive)
+            f.write(data)
 
 pyglet.clock.schedule_interval(step, 0.01)
 
@@ -74,21 +73,31 @@ def main():
     print "To save data from run, type 'create file'."
 
     while True:
+
         commandLine = raw_input(">>> ")
+
         if commandLine == 'run':
             pyglet.app.run()
+
         if commandLine == 'create file':
+            timestepData = raw_input("'yes' or 'no', save timestep data?\n >>> ")
             filename = raw_input("enter file name: ")
             global f
             f = open(filename, 'w')
-            f.write('timestep born dead alive\n')
-            world.saveData = True
+
+            if timestepData == 'yes':
+                f.write('timestep born dead alive\n')
+                world.saveData = 'tstep'
+            else:
+                world.saveData = 'onlyGenes'
+
         if commandLine == 'quit':
-            if world.saveData == True:
+            if world.saveData != False:
                 genomes = [c.genome for c in world.getCreatures()]
                 s = str(genomes)
                 f.write(s)
                 f.close()
+
             return False
 
 
