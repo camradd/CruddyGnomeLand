@@ -1,4 +1,4 @@
-import TileObject, conx, math, random, numpy
+import TileObject, conx, math, random, numpy, uuid
 
 class EvalNet(conx.BackpropNetwork):
 
@@ -61,6 +61,9 @@ class Creature(TileObject.TileObject):
         self.health = 1.0
         self.tile = None
         self.lastAction = None
+        self.seeds = str(self.evalNet.seed) + str(self.actNet.seed)
+        self.id = uuid.uuid4()
+
 
         if genome == None:
             evalWeights = self.evalNet.getWeights("input", "output").flatten().tolist()
