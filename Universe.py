@@ -8,10 +8,11 @@ class Universe:
         img.height = self.tileSize
         return img
 
-    def __init__(self, width = 75, height = 45, tileSize = 16):
+    def __init__(self, name, width = 75, height = 45, tileSize = 16):
         self.width = width
         self.height = height
         self.tileSize = tileSize
+        self.name = name
 
         self._tileObjectImages = {
             TileObject.Tree:       self._makeTileImg('img/tree.png'),
@@ -25,6 +26,7 @@ class Universe:
             width  = width * tileSize,
             height = height * tileSize
         )
+        self.window.set_caption(self.name)
         self.batch = pyglet.graphics.Batch()
         self.sprites = [
             [pyglet.sprite.Sprite(self._tileObjectImages[TileObject.TileObject],
@@ -35,7 +37,6 @@ class Universe:
 
         self.window.set_handler('on_draw', lambda: self.on_draw())
         pyglet.clock.schedule_interval(lambda dx: self.step(), 0.01)
-        pyglet.app.run()
 
     def step(self):
         self.world.step()
