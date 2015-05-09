@@ -20,6 +20,22 @@ class World:
         self.height = height
         self.saveData = False
 
+    @property
+    def population(self):
+        creatures = []
+        for row in self.tiles:
+            for tileY in row:
+                c = tileY.tileObjectForType(Creature.Creature)
+                if c != None: creatures.append(c)
+        return creatures
+
+    @property
+    def popSize(self):
+        return len(self.Population)
+
+    @property
+    def ages(self):
+        return [c.age for c in self.population]
 
     @property
     def alive(self):
@@ -108,10 +124,6 @@ class World:
                 return
         print 'Overpopulation!'
 
-    def getCreatures(self):
-        creatures = []
-        for row in self.tiles:
-            for tileY in row:
-                c = tileY.tileObjectForType(Creature.Creature)
-                if c != None: creatures.append(c)
-        return creatures
+
+    def avgAges(self):
+        return sum(self.ages)/len(self.ages)

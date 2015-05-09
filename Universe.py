@@ -49,8 +49,9 @@ class Universe:
 
     @property
     def stateLabel(self):
-        return pyglet.text.Label('time step: %d  born: %d  dead: %d  alive: %d' % (
-            self.world.time, self.world.born, self.world.dead, self.world.alive),
+        return pyglet.text.Label('time step: %d  born: %d  dead: %d  alive: %d  avg age: %.2f' % (
+            self.world.time, self.world.born, self.world.dead,
+            self.world.alive, self.world.avgAge()),
             font_name='mono', font_size= 10,
             x=self.window.width / 100, y=self.window.height / 100,
             anchor_x='left', anchor_y='bottom')

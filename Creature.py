@@ -63,6 +63,9 @@ class Creature(TileObject.TileObject):
         self.lastAction = None
         self.seeds = str(self.evalNet.seed) + str(self.actNet.seed)
         self.id = uuid.uuid4()
+        self.age = 0
+        self.parents = []
+        self.children = []
 
 
         if genome == None:
@@ -84,8 +87,10 @@ class Creature(TileObject.TileObject):
     def world(self):
         return None if self.tile == None else self.tile.world
 
+
     def __repr__(self):
         return "^_^"
+        return "p" + "".join(self.parents + "c" self.children
 
     def setWeights(self, net, weights):
         index = 0
@@ -125,6 +130,7 @@ class Creature(TileObject.TileObject):
         return action
 
     def step(self):
+        self.age += 1
         self.lastInput = self.sight + [self.health]
         self.lastEval = self.evalNet.propagate(input = self.lastInput)
         self.lastAction = self.makeAction()
@@ -145,11 +151,13 @@ class Creature(TileObject.TileObject):
         self.actNet.train(1)
 
 
-    def reproduce(self, orgy = True):
+    def reproduce(self, orgy = True, mutateGene = False):
         self.world.born += 1
         nearby = self.world.getNearbyCreatures(self)
+        kid = None
         if len(nearby) == 0:
-            return Creature(self.mutate(self.genome))
+            kid = Creature(self.mutate(self.genome), mutateGene)
+            kid.parents = [self.id]
         else:
             if orgy == True:
                 parents = [p.genome for p in nearby + [self]]
@@ -159,18 +167,22 @@ class Creature(TileObject.TileObject):
                     p2 = random.choice(parents)
                     parents.remove(p2)
                     parents.append(self.crossover(p1,p2))
-                return Creature(self.mutate(parents[0]))
+                kid = Creature(self.mutate(parents[0], mutateGene))
+                kid.parents = [p.id for p in nearby + [self]]
             else:
-                return self.mutate(self.crossover(random.choice(nearby).genome, self.genome))
+                kid = self.mutate(self.crossover(random.choice(nearby).genome, \
+                                  self.genome), mutateGene)
+        self.children.append(kid.id)
+        return kid
 
-    def mutate(self, genome, rate = .3):
-        return [
-            g + random.uniform(-.5,.5) if random.uniform(0,1) < rate else g for g in genome
-        ]
+    def mutate(self, genome, rate = .3, mutateGene):
+        if mutateGene:
+            return [
+                g + random.uniform(-.5,.5) if random.uniform(0,1) < rate else \
+                g for g in genome
+            ]
+        else: return genome
 
     def crossover(self, mateGenome, partnerGenome):
         pivot = random.choice(range(len(mateGenome)))
-        return [
-            mateGenome[i] if i < pivot else \
-            partnerGenome[i] for i in range(len(mateGenome))
-        ]
+        return [mateGenome[i] if i < pivot else partnerGenome[i] for i in range(len(mateGenome))]
