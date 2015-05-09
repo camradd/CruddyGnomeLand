@@ -1,6 +1,7 @@
 import World, TileObject, Creature, pyglet
+import mongoengine as db
 
-class Universe:
+class Universe(db.Document):
 
     def _makeTileImg(self, path):
         img = pyglet.resource.image(path)
@@ -8,7 +9,7 @@ class Universe:
         img.height = self.tileSize
         return img
 
-    def __init__(self, name, width = 75, height = 45, tileSize = 16):
+    def __init__(self, name, width = 75, height = 45, tileSize = 16, stepTime = 0.1):
         self.width = width
         self.height = height
         self.tileSize = tileSize
@@ -24,9 +25,10 @@ class Universe:
         self.world = World.World(width, height)
         self.window = pyglet.window.Window(
             width  = width * tileSize,
-            height = height * tileSize
+            height = height * tileSize,
+            visible = False,
+            caption = self.name
         )
-        self.window.set_caption(self.name)
         self.batch = pyglet.graphics.Batch()
         self.sprites = [
             [pyglet.sprite.Sprite(self._tileObjectImages[TileObject.TileObject],
@@ -36,12 +38,33 @@ class Universe:
         ]
 
         self.window.set_handler('on_draw', lambda: self.on_draw())
-        pyglet.clock.schedule_interval(lambda dx: self.step(), 0.01)
+        self.setStepTime(stepTime)
 
-    def step(self):
+    def setStepTime(self, time):
+        pyglet.clock.unschedule(self.step)
+        pyglet.clock.unschedule(self.stepFast)
+
+        if time == 0:
+            pyglet.clock.schedule_interval(self.stepFast, 0.001)
+        else:
+            pyglet.clock.schedule_interval(self.step, time)
+
+    def step(self, dt = 0):
         self.world.step()
 
+    def stepFast(self, dt = 0):
+        self.world.step(5)
+
+    def show(self, activate = True):
+        self.window.set_visible(True)
+        if activate: self.window.activate()
+    def hide(self):
+        self.window.set_visible(False)
+    def toggle(self):
+        self.window.set_visible(not self.window.visible)
+
     def on_draw(self):
+        if not self.window.visible: return
         self._updateSpriteImages()
         self.window.clear()
         self.batch.draw()

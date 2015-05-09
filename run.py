@@ -1,9 +1,9 @@
-import atexit, os, tempfile, shutil
+import atexit, sys
 import subprocess as sp
 
 runs = {}
 
-def start(name):
+def run(name):
     if name in runs:
         print 'Run with that name already exists!'
         return
@@ -26,7 +26,8 @@ def enter(name):
     p = runs[name]
     out = p.stdout
 
-    print 'Entering universe "' + name + '". Type "exit" to leave.'
+    print 'Entering universe "' + name + '". Type "exit" to leave. Variable u and w are the ' + \
+          'unvierse and world respectively.'
 
     while 1:
         s = raw_input(name + ' -> ')
@@ -44,3 +45,13 @@ def enter(name):
 def on_exit():
     for p in runs.values():
         p.kill()
+
+print 'Welcome to Cruddy Gnome Land!'
+
+if not sys.flags.interactive:
+    print 'Run this file interactively (python -i ' + sys.argv[0] + ').'
+    sys.exit()
+
+h  = 'run("<name>")   = start a new universe\n'
+h += 'enter("<name>") = enter universe'
+print h

@@ -26,15 +26,16 @@ class World:
         return self.born - self.dead
 
     def step(self, steps=1):
-        self.time += 1
-        flatTiles = [self.tiles[r][c] for c in range(self.width) for r in range(self.height)]
-        random.shuffle(flatTiles)
+        for step in range(steps):
+            flatTiles = [self.tiles[r][c] for c in range(self.width) for r in range(self.height)]
+            random.shuffle(flatTiles)
 
-        for tile in flatTiles:
-            tile.step()
+            for tile in flatTiles:
+                tile.step()
 
-        for tile in flatTiles:
-            tile.stepFinished()
+            for tile in flatTiles:
+                tile.stepFinished()
+        self.time += steps
 
 
     def createTile(self, x, y):
