@@ -7,16 +7,20 @@ def readInput(dx):
     line = f.readline()
     if line == None: return
     try:
-        exec line in globals(), globals()
-    except Exception as e:
-        print e
+        print eval(line, globals(), globals())
+    except:
+        try:
+            exec line in globals(), globals()
+        except Exception as e:
+            print e
     print '___DONE___'
 
-pyglet.clock.schedule_interval(readInput, 0.1)
+pyglet.clock.schedule_interval(readInput, 0.01)
 
 def ctrl_c_handler(signal, frame):
     pass
 signal.signal(signal.SIGINT, ctrl_c_handler)
 
-universe = Universe.Universe(sys.argv[1])
+u = universe = Universe.Universe(sys.argv[1])
+w = universe.world
 pyglet.app.run()
