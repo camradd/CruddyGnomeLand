@@ -3,3 +3,10 @@
 *.class
 
 *.txt
+
+CGLWriteUp/*.aux
+CGLWriteUp/*.bbl
+CGLWriteUp/*.blg
+CGLWriteUp/*.log
+CGLWriteUp/*.pdf
+CGLWriteUp/*.gz
