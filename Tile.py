@@ -1,6 +1,6 @@
 import random, TileObject, Creature
 
-class Tile:
+class Tile(object):
 
     '''
      The Tile class represents a single tile in the world. It has TileObjects as
@@ -61,8 +61,14 @@ class Tile:
             self.addTileObject(TileObject.Food())
 
         for tileObject in self.tileObjects:
+            # Tile objects can move during their step, and then get stepped again in their
+            # new tile. So we use a boolean flag to keep that from happening.
+            if tileObject._stepping: continue
+            tileObject._stepping = True
             tileObject.step()
 
     def stepFinished(self):
         for tileObject in self.tileObjects:
+            if not tileObject._stepping: continue
+            tileObject._stepping = False
             tileObject.stepFinished()

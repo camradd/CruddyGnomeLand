@@ -1,14 +1,16 @@
-import atexit, sys
+import atexit, sys, json
 import subprocess as sp
 
 runs = {}
 
-def run(name):
+def run(name, settings = {}):
     if name in runs:
         print 'Run with that name already exists!'
         return
 
-    r = sp.Popen(['python', '_run_process.py', name], stderr=sp.PIPE, stdout=sp.PIPE, stdin=sp.PIPE)
+    r = sp.Popen(['python', '_run_process.py', name, "'" + json.dumps(settings) + "'"],
+                    stderr=sp.PIPE, stdout=sp.PIPE, # comment this out to see errors in outer shell
+                    stdin=sp.PIPE)
     runs[name] = r
 
 def kill(name):
@@ -52,6 +54,6 @@ if not sys.flags.interactive:
     print 'Run this file interactively (python -i ' + sys.argv[0] + ').'
     sys.exit()
 
-h  = 'run("<name>")   = start a new universe\n'
-h += 'enter("<name>") = enter universe'
+h  = 'run("<name>"[, settings]) = start a new universe\n'
+h += 'enter("<name>")           = enter universe'
 print h

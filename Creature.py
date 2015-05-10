@@ -1,4 +1,5 @@
-import TileObject, conx, math, random, numpy, uuid
+import TileObject, conx, math, random, numpy, merge
+import mongoengine as db
 
 class EvalNet(conx.BackpropNetwork):
 
@@ -44,7 +45,7 @@ class ActNet(conx.BackpropNetwork):
 
     def Print(self, str): pass
 
-class Creature(TileObject.TileObject):
+class Creature(TileObject.TileObject, db.Document):
 
     '''
     Creature class. Each creature has an action network, determining what action
@@ -54,38 +55,64 @@ class Creature(TileObject.TileObject):
 
     visibilityIndex = 10
 
+    health = db.FloatField()
+    age = db.IntField()
+    genome = db.ListField(db.FloatField())
+    parents = db.ListField(db.ReferenceField('self', reverse_delete_rule=db.PULL))
+    generation = db.IntField(default = 0)
+    timeBorn = db.IntField(default = 0)
+    actWeights = db.ListField(db.FloatField())
 
-    def __init__(self, genome = None):
+    def __init__(self, genome = None, settings = {}):
+        db.Document.__init__(self)
+        TileObject.TileObject.__init__(self)
+
+        defaultSettings = {
+            'orgy': True,
+            'mutationRate': 0.3,
+            'minMutation': -0.5,
+            'maxMutation': 0.5,
+            'inheritLearntWeights': False
+        }
+        self.settings = merge.mergeDict(defaultSettings, settings)
+
         self.evalNet = EvalNet()
         self.actNet = ActNet()
-        self.health = 1.0
-        self.tile = None
         self.lastAction = None
-        self.seeds = str(self.evalNet.seed) + str(self.actNet.seed)
-        self.id = uuid.uuid4()
 
+        self.health = 1.0
+        self.age = 0
 
-        if genome == None:
+        if genome == None and len(self.genome) == 0:
             evalWeights = self.evalNet.getWeights("input", "output").flatten().tolist()
             actWeights = self.actNet.getWeights("input", "output").flatten().tolist()
             self.genome = evalWeights + actWeights
 
         else:
             evalWeightSize = self.evalNet.inputSize * self.evalNet.outputSize
-            self.genome = genome
+            if len(self.genome) == 0: self.genome = genome
             self.setWeights(self.evalNet, self.genome[0:evalWeightSize])
-            self.setWeights(self.actNet, self.genome[evalWeightSize:])
+            if len(self.actWeights) != 0:
+                self.setWeights(self.actWeights)
+            else:
+                self.setWeights(self.actNet, self.genome[evalWeightSize:])
+
+        self.save()
+
+    def clean(self):
+        self.actWeights = self.actNet.getWeights("input", "output").flatten().tolist()
 
     @property
     def sight(self):
         return self.world.getSight(self)
 
     @property
-    def world(self):
-        return None if self.tile == None else self.tile.world
-
-    def __repr__(self):
-        return "^_^"
+    def tile(self):
+        return self._tile
+    @tile.setter
+    def tile(self, tile):
+        self._tile = tile
+        self.world = (None if tile == None else tile.world)
 
     def setWeights(self, net, weights):
         index = 0
@@ -116,8 +143,8 @@ class Creature(TileObject.TileObject):
 
     def die(self):
         if self.tile == None: return
-        self.world.dead += 1
-        self.tile.removeTileObject(self)
+        self.save()
+        self.world.removeCreature(self)
 
     def makeAction(self):
         probs = self.actNet.propagate(input = self.sight + [self.health])
@@ -125,6 +152,7 @@ class Creature(TileObject.TileObject):
         return action
 
     def step(self):
+        self.age += 1
         self.lastInput = self.sight + [self.health]
         self.lastEval = self.evalNet.propagate(input = self.lastInput)
         self.lastAction = self.makeAction()
@@ -144,14 +172,15 @@ class Creature(TileObject.TileObject):
         self.actNet.setTargets([targets])
         self.actNet.train(1)
 
-
-    def reproduce(self, orgy = True):
-        self.world.born += 1
+    def reproduce(self):
         nearby = self.world.getNearbyCreatures(self)
+        c = None
         if len(nearby) == 0:
-            return Creature(self.mutate(self.genome))
+            c = Creature(self.mutate(self.genome), self.settings)
+            c.generation = self.generation + 1
+            c.parents.append(self)
         else:
-            if orgy == True:
+            if self.settings['orgy']:
                 parents = [p.genome for p in nearby + [self]]
                 while len(parents) > 1:
                     p1 = random.choice(parents)
@@ -159,13 +188,26 @@ class Creature(TileObject.TileObject):
                     p2 = random.choice(parents)
                     parents.remove(p2)
                     parents.append(self.crossover(p1,p2))
-                return Creature(self.mutate(parents[0]))
-            else:
-                return self.mutate(self.crossover(random.choice(nearby).genome, self.genome))
+                c = Creature(self.mutate(parents[0]), self.settings)
+                for p in nearby + [self]: c.parents.append(p)
+                c.generation = max([p.generation for p in nearby + [self]])
 
-    def mutate(self, genome, rate = .3):
+            else:
+                parent2 = random.choice(nearby)
+                genome = self.mutate(self.crossover(parent2.genome, self.genome))
+                c = Creature(genome, self.settings)
+                c.parents.append(self)
+                c.parents.append(parent2)
+                c.generation = max([self.generation, parent2.generation])
+
+        c.timeBorn = self.world.time
+        return c
+
+    def mutate(self, genome):
+        rate = self.settings['mutationRate']
+        minD, maxD = self.settings['minMutation'], self.settings['maxMutation']
         return [
-            g + random.uniform(-.5,.5) if random.uniform(0,1) < rate else g for g in genome
+            g + random.uniform(minD, maxD) if random.uniform(0,1) < rate else g for g in genome
         ]
 
     def crossover(self, mateGenome, partnerGenome):

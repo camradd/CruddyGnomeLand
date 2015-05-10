@@ -1,4 +1,4 @@
-class TileObject:
+class TileObject(object):
 
     '''
      The TileObject class represents something inside a tile in the world
@@ -14,6 +14,8 @@ class TileObject:
 
     def canEnter(self, creature):
         return True
+
+    _stepping = False
 
     def step(self):
         pass

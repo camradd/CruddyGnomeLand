@@ -1,4 +1,4 @@
-import Universe, sys, pyglet, signal, time
+import Universe, sys, pyglet, signal, time, json
 from AsyncFIFORead import AsyncFIFORead
 
 f = AsyncFIFORead(sys.stdin)
@@ -21,6 +21,6 @@ def ctrl_c_handler(signal, frame):
     pass
 signal.signal(signal.SIGINT, ctrl_c_handler)
 
-u = universe = Universe.Universe(sys.argv[1])
+u = universe = Universe.Universe(sys.argv[1], json.loads(sys.argv[2][1:-1]))
 w = universe.world
 pyglet.app.run()

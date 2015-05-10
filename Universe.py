@@ -1,5 +1,7 @@
-import World, TileObject, Creature, pyglet
+import World, TileObject, Creature, pyglet, datetime, merge
 import mongoengine as db
+
+db.connect('cruddy_gnome_land')
 
 class Universe(db.Document):
 
@@ -9,9 +11,30 @@ class Universe(db.Document):
         img.height = self.tileSize
         return img
 
-    def __init__(self, name, width = 75, height = 45, tileSize = 16, stepTime = 0.1):
-        self.width = width
-        self.height = height
+    name = db.StringField()
+    world = db.ReferenceField('World', reverse_delete_rule=db.DENY)
+    created = db.DateTimeField(default=datetime.datetime.now)
+    modified = db.DateTimeField()
+    runData = db.ListField(db.DictField())
+    settings = db.DictField()
+
+    def __init__(self, name, settings = {}, tileSize = 16, stepTime = 0.1):
+        db.Document.__init__(self)
+
+        defaultSettings = {
+            'world': {
+                'width': 75,
+                'height': 45,
+                'creature': {}
+            }
+        }
+        if not self.settings:
+            self.settings = merge.mergeDict(defaultSettings, settings)
+        else:
+            self.settings = merge.mergeDict(defaultSettings, self.settings)
+
+        width = self.width = self.settings['world']['width']
+        height = self.height = self.settings['world']['height']
         self.tileSize = tileSize
         self.name = name
 
@@ -22,7 +45,7 @@ class Universe(db.Document):
             Creature.Creature:     self._makeTileImg('img/creature.png')
         }
 
-        self.world = World.World(width, height)
+        self.world = World.World(self.settings['world'])
         self.window = pyglet.window.Window(
             width  = width * tileSize,
             height = height * tileSize,
@@ -40,6 +63,19 @@ class Universe(db.Document):
         self.window.set_handler('on_draw', lambda: self.on_draw())
         self.setStepTime(stepTime)
 
+    def clean(self):
+        self.modified = datetime.datetime.now
+        self.runData.append({
+            'time': self.world.time,
+            'born': self.world.born,
+            'dead': self.world.dead,
+            'alive': self.world.born - self.world.dead,
+            'avgAge': self.world.avgAge
+        })
+        self.world.save()
+        for c in self.world.population:
+            c.save()
+
     def setStepTime(self, time):
         pyglet.clock.unschedule(self.step)
         pyglet.clock.unschedule(self.stepFast)
@@ -51,9 +87,11 @@ class Universe(db.Document):
 
     def step(self, dt = 0):
         self.world.step()
+        if self.world.time % 10 == 1: self.save()
 
     def stepFast(self, dt = 0):
-        self.world.step(5)
+        self.world.step(10)
+        self.save()
 
     def show(self, activate = True):
         self.window.set_visible(True)
@@ -72,8 +110,10 @@ class Universe(db.Document):
 
     @property
     def stateLabel(self):
-        return pyglet.text.Label('time step: %d  born: %d  dead: %d  alive: %d' % (
-            self.world.time, self.world.born, self.world.dead, self.world.alive),
+        return pyglet.text.Label(
+            'time step: %d  born: %d  dead: %d  alive: %d  avg age: %.2f' % (
+            self.world.time, self.world.born, self.world.dead,
+            self.world.alive, self.world.avgAge),
             font_name='mono', font_size= 10,
             x=self.window.width / 100, y=self.window.height / 100,
             anchor_x='left', anchor_y='bottom')
