@@ -75,9 +75,6 @@ class World(db.Document):
                 return elements[i]
         return random.choice(elements)
 
-    @property
-    def popSize(self):
-        return len(self.population)
 
     @property
     def ages(self):
@@ -85,7 +82,7 @@ class World(db.Document):
 
     @property
     def avgAge(self):
-        return sum(self.ages) / float(self.popSize)
+        return sum(self.ages) / float(self.alive)
 
     def getNearbyCreatures(self, creature, distance=4):
         creatures = []

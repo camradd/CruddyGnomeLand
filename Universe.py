@@ -30,7 +30,8 @@ class Universe(db.Document):
                 'width': 75,
                 'height': 45,
                 'creature': {}
-            }
+            },
+            'saveFreq' : 10
         }
         if not self.settings:
             self.settings = merge.mergeDict(defaultSettings, settings)
@@ -91,7 +92,7 @@ class Universe(db.Document):
 
     def step(self, dt = 0):
         self.world.step()
-        if self.world.time % 10 == 1: self.save()
+        if self.world.time % self.settings["saveFreq"] == 1: self.save()
 
     def stepFast(self, dt = 0):
         self.world.step(10)
