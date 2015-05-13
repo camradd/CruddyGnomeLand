@@ -15,7 +15,7 @@ def readInput(dx):
             print e
     print '___DONE___'
 
-pyglet.clock.schedule_interval(readInput, 0.01)
+pyglet.clock.schedule_interval(readInput, 0.1) # TODO - change this
 
 def ctrl_c_handler(signal, frame):
     pass

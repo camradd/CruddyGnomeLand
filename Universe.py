@@ -1,5 +1,9 @@
 import World, TileObject, Creature, pyglet, datetime, merge
-import mongoengine as db
+
+try:
+    import mongoengine as db
+except ImportError:
+    import db_fill as db
 
 db.connect('cruddy_gnome_land')
 
