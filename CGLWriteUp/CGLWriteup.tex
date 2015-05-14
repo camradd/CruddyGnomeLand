@@ -31,7 +31,7 @@ Inspired by the work of Ackley and Littman \cite{erl}, a two dimensional tile wo
 The following data is from a 68551 time step of Cruddy Gnome Land. The first plot shows both the average age (in green) of every creature in the world and the age of the oldest creature in the world (in red). The second plot shows the size of the current population (in blue).
 
 \begin{center}
-\pgfplotstableread{rundata.dat}{\data}
+\pgfplotstableread{rundatasmall.dat}{\data}
 \begin{tikzpicture}[scale=1]
 \begin{axis}[width = 1\textwidth, height = 0.5 \textwidth, title=Cruddy Gnome Land Run 1,
 	xlabel=Time Step, ymin = 0, xmin = 0, xmax = 70000, ylabel =  Age (in time steps alive)]
@@ -42,7 +42,7 @@ The following data is from a 68551 time step of Cruddy Gnome Land. The first plo
 \end{center}
 
 \begin{center}
-\pgfplotstableread{rundata.dat}{\data}
+\pgfplotstableread{rundatasmall.dat}{\data}
 \begin{tikzpicture}[scale=1]
 \begin{axis}[width = 1\textwidth, height = 0.5 \textwidth, title=Cruddy Gnome Land Run 1,
 	xlabel=Time Step, ymin = 0, xmin = 0, xmax = 70000, ylabel =  Population Size]
