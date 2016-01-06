@@ -1,9 +1,10 @@
 import random, Tile, TileObject, Creature, copy, merge
 
-try:
-    import mongoengine as db
-except ImportError:
-    import db_fill as db
+# try:
+#     import mongoengine as db
+# except ImportError:
+#     import db_fill as db
+import db_fill as db
 
 class World(db.Document):
 

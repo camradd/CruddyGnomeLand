@@ -1,9 +1,10 @@
 import TileObject, conx, math, random, numpy, merge
 
-try:
-    import mongoengine as db
-except ImportError:
-    import db_fill as db
+# try:
+#     import mongoengine as db
+# except ImportError:
+#     import db_fill as db
+import db_fill as db
 
 class EvalNet(conx.BackpropNetwork):
 
